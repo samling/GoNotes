@@ -15,11 +15,6 @@ type Tag struct {
 	name, members string
 }
 
-type Notebook interface {
-	Save(db *sql.DB) bool
-	Load(db *sql.DB) bool
-}
-
 func (n Note) Save(db *sql.DB) bool {
 	tx, err := db.Begin()
 	check(err)
