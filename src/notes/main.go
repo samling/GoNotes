@@ -28,7 +28,7 @@ func main() {
 	// Close database connection after main() returns
 	defer db.Close()
 
-	n := &Note{"test title", "test value"}
+	n := &Note{"test title", "test value", "test tag"}
 	//testTag := &Tag{"test name", "test member"}
 	n.Save(db)
 

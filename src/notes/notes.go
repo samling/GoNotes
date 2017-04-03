@@ -8,7 +8,7 @@ import (
 )
 
 type Note struct {
-	title, body string
+	title, body, tags string
 }
 
 type Tag struct {
