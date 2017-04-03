@@ -28,11 +28,13 @@ func main() {
 	// Close database connection after main() returns
 	defer db.Close()
 
-	testNote := &Note{"test title", "test value"}
-	//testTag := &Tag{"test name", "test member"}
-	testNote.Add(db)
+	var n Notebook
 
-	testNote.View(db)
+	n = &Note{"test title", "test value"}
+	//testTag := &Tag{"test name", "test member"}
+	n.Save(db)
+
+	n.Load(db)
 	//fmt.Printf("%t\n", res)
 
 	//res = testTag.Add(db)

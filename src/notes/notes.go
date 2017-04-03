@@ -15,13 +15,12 @@ type Tag struct {
 	name, members string
 }
 
-type Category interface {
-	Add(db *sql.DB) bool
-	//Modify(db *bolt.DB) bool
-	//Remove(db *bolt.DB) bool
+type Notebook interface {
+	Save(db *sql.DB) bool
+	Load(db *sql.DB) bool
 }
 
-func (n Note) Add(db *sql.DB) bool {
+func (n Note) Save(db *sql.DB) bool {
 	tx, err := db.Begin()
 	check(err)
 
@@ -38,7 +37,7 @@ func (n Note) Add(db *sql.DB) bool {
 	return true
 }
 
-func (n Note) View(db *sql.DB) bool {
+func (n Note) Load(db *sql.DB) bool {
 	rows, err := db.Query("select id, title, body from Notes")
 	check(err)
 
