@@ -1,10 +1,30 @@
 package main
 
-import "github.com/boltdb/bolt"
+import (
+	"database/sql"
+	_ "fmt"
+	_ "github.com/mattn/go-sqlite3"
+	_ "os"
+)
 
-func dbOpen() *bolt.DB {
-	// Open a connection to the database and return a db object
-	db, err := bolt.Open("notes.db", 0600, nil)
+func InitDB(filepath string) *sql.DB {
+	db, err := sql.Open("sqlite3", filepath)
 	check(err)
+	if db == nil {
+		panic("db nil")
+	}
 	return db
+}
+
+func CreateTables(db *sql.DB) {
+	qry := `
+	create table if not exists Notes (
+		id INTEGER NOT NULL PRIMARY KEY,
+		title TEXT,
+		body TEXT
+	);
+	`
+
+	_, err := db.Exec(qry)
+	check(err)
 }
