@@ -70,27 +70,6 @@ func ListNotes(g *gocui.Gui, db *sql.DB) bool {
 	return true
 }
 
-func ViewList(db *sql.DB) bool {
-	rows, err := db.Query("select id, title, body from Notes")
-	check(err)
-
-	defer rows.Close()
-
-	for rows.Next() {
-		var id int
-		var title string
-		var body string
-
-		err = rows.Scan(&id, &title, &body)
-		fmt.Println(id, title, body, "\n")
-		check(err)
-	}
-	err = rows.Err()
-	check(err)
-
-	return true
-}
-
 //
 //func (n Note) Modify(noteName string, db *bolt.DB) bool {
 //	err := db.Update(func(tx *bolt.Tx) error {
