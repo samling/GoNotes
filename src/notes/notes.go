@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "encoding/json"
 	"fmt"
+	"github.com/jroimartin/gocui"
 	_ "os"
 )
 
@@ -32,7 +33,40 @@ func (n Note) Save(db *sql.DB) bool {
 	return true
 }
 
-func (n Note) Load(db *sql.DB) bool {
+func ListNotes(g *gocui.Gui, db *sql.DB) bool {
+	g.Execute(func(g *gocui.Gui) error {
+		v, err := g.View("sidebar")
+		m, err := g.View("main")
+		check(err)
+		v.Clear()
+		m.Clear()
+
+		rows, err := db.Query("select id, title, body from Notes")
+		check(err)
+		defer rows.Close()
+
+		for rows.Next() {
+			var id int
+			var title string
+			var body string
+
+			err = rows.Scan(&id, &title, &body)
+			check(err)
+
+			fmt.Fprintln(v, id, title)
+			fmt.Fprintln(m, body)
+			return nil
+		}
+		err = rows.Err()
+		check(err)
+
+		return err
+	})
+
+	return true
+}
+
+func ViewList(db *sql.DB) bool {
 	rows, err := db.Query("select id, title, body from Notes")
 	check(err)
 
@@ -44,8 +78,8 @@ func (n Note) Load(db *sql.DB) bool {
 		var body string
 
 		err = rows.Scan(&id, &title, &body)
+		fmt.Println(id, title, body, "\n")
 		check(err)
-		fmt.Println(id, title, body)
 	}
 	err = rows.Err()
 	check(err)
