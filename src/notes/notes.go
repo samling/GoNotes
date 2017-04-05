@@ -70,7 +70,6 @@ func ListNotes(g *gocui.Gui, db *sql.DB) bool {
 	return true
 }
 
-//
 //func (n Note) Modify(noteName string, db *bolt.DB) bool {
 //	err := db.Update(func(tx *bolt.Tx) error {
 //		b := tx.Bucket([]byte("Notes"))
