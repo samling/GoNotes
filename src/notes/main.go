@@ -67,9 +67,11 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
+
 		// Open a database connection
 		db := InitDB(dbpath)
 
+		// List out all of our notes
 		ListNotes(g, db)
 	}
 

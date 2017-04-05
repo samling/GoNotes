@@ -35,10 +35,13 @@ func (n Note) Save(db *sql.DB) bool {
 
 func ListNotes(g *gocui.Gui, db *sql.DB) bool {
 	g.Execute(func(g *gocui.Gui) error {
-		v, err := g.View("sidebar")
+		s, err := g.View("sidebar")
+		check(err)
+
 		m, err := g.View("main")
 		check(err)
-		v.Clear()
+
+		s.Clear()
 		m.Clear()
 
 		rows, err := db.Query("select id, title, body from Notes")
@@ -53,14 +56,15 @@ func ListNotes(g *gocui.Gui, db *sql.DB) bool {
 			err = rows.Scan(&id, &title, &body)
 			check(err)
 
-			fmt.Fprintln(v, id, title)
+			fmt.Fprintln(s, id, title)
 			fmt.Fprintln(m, body)
 			return nil
 		}
+
 		err = rows.Err()
 		check(err)
 
-		return err
+		return nil
 	})
 
 	return true
