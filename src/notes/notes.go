@@ -33,12 +33,12 @@ func (n Note) Save(db *sql.DB) bool {
 	return true
 }
 
-func ListNotes(g *gocui.Gui, db *sql.DB) bool {
-	g.Execute(func(g *gocui.Gui) error {
-		s, err := g.View("sidebar")
+func ListNotes(gui *gocui.Gui, db *sql.DB) bool {
+	gui.Execute(func(gui *gocui.Gui) error {
+		s, err := gui.View("sidebar")
 		check(err)
 
-		m, err := g.View("main")
+		m, err := gui.View("main")
 		check(err)
 
 		s.Clear()
@@ -46,7 +46,6 @@ func ListNotes(g *gocui.Gui, db *sql.DB) bool {
 
 		rows, err := db.Query("select id, title, body from Notes")
 		check(err)
-		defer rows.Close()
 
 		for rows.Next() {
 			var id int
@@ -56,7 +55,7 @@ func ListNotes(g *gocui.Gui, db *sql.DB) bool {
 			err = rows.Scan(&id, &title, &body)
 			check(err)
 
-			fmt.Fprintln(s, id, title)
+			fmt.Fprintf(s, "%s\n", title)
 			fmt.Fprintln(m, body)
 			return nil
 		}
@@ -64,46 +63,9 @@ func ListNotes(g *gocui.Gui, db *sql.DB) bool {
 		err = rows.Err()
 		check(err)
 
+		rows.Close()
 		return nil
 	})
 
 	return true
 }
-
-//func (n Note) Modify(noteName string, db *bolt.DB) bool {
-//	err := db.Update(func(tx *bolt.Tx) error {
-//		b := tx.Bucket([]byte("Notes"))
-//		err := b.Put([]byte(n.title), []byte(n.body))
-//		return err
-//	})
-//
-//	check(err)
-//
-//	return true
-//}
-//
-//func (t Tag) Add(db *bolt.DB) bool {
-//	err := db.Update(func(tx *bolt.Tx) error {
-//		b := tx.Bucket([]byte("Notes"))
-//		err := b.Put([]byte(t.name), []byte(t.members))
-//		return err
-//	})
-//
-//	check(err)
-//
-//	return true
-//}
-//
-//func categoryList(b *bolt.DB) {
-//	// Open the "Notes" bucket and print its key/value pairs
-//	b.View(func(tx *bolt.Tx) error {
-//		b := tx.Bucket([]byte("Notes"))
-//
-//		b.ForEach(func(k, v []byte) error {
-//			fmt.Printf("key=%s, value=%s\n", k, v)
-//			return nil
-//		})
-//
-//		return nil
-//	})
-//}

@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "bufio"
-	_ "database/sql"
+	"database/sql"
 	_ "fmt"
 	"github.com/jroimartin/gocui"
 	_ "github.com/mattn/go-sqlite3"
@@ -14,6 +14,8 @@ import (
 
 const dbpath = "./database.db"
 
+var db *sql.DB
+
 func check(e error) {
 	if e != nil {
 		panic(e)
@@ -22,27 +24,33 @@ func check(e error) {
 
 func main() {
 	// Open a database connection
-	db := InitDB(dbpath)
+	db = InitDB(dbpath)
 	defer db.Close()
 
-	// Set up our tables if they don't exist
+	// Create our tables if they don't exist
 	CreateTables(db)
 
 	// Set up the GUI
-	g, err := gocui.NewGui(gocui.OutputNormal)
+	gui, err := gocui.NewGui(gocui.OutputNormal)
 	check(err)
-	defer g.Close()
+	defer gui.Close()
 
 	// Set our layout for the GUI
-	g.SetManagerFunc(layout)
+	gui.SetManagerFunc(layout)
+
+	// Enable the cursor
+	gui.Cursor = true
+
+	// List out all of our notes
+	ListNotes(gui, db)
 
 	// Ctrl-C keybinding
-	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+	if err := keybindings(gui); err != nil {
 		log.Panicln(err)
 	}
 
 	// Check for loops in the main window
-	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+	if err := gui.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
 	}
 
@@ -55,9 +63,6 @@ func main() {
 
 	//res = testTag.Add(db)
 	//fmt.Printf("%t\n", res)
-
-	// List the contents of our Notes category (bucket)
-	//categoryList(db)
 }
 
 func layout(g *gocui.Gui) error {
@@ -68,11 +73,6 @@ func layout(g *gocui.Gui) error {
 			return err
 		}
 
-		// Open a database connection
-		db := InitDB(dbpath)
-
-		// List out all of our notes
-		ListNotes(g, db)
 	}
 
 	if _, err := g.SetView("main", 30, -1, maxX, maxY); err != nil {
@@ -83,6 +83,46 @@ func layout(g *gocui.Gui) error {
 	return nil
 }
 
+func keybindings(gui *gocui.Gui) error {
+	if err := gui.SetKeybinding("sidebar", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
+		return err
+	}
+	if err := gui.SetKeybinding("sidebar", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
+		return err
+	}
+	if err := gui.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+		log.Panicln(err)
+	}
+
+	return nil
+}
+
 func quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
+}
+
+func cursorDown(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		cx, cy := v.Cursor()
+		if err := v.SetCursor(cx, cy+1); err != nil {
+			ox, oy := v.Origin()
+			if err := v.SetOrigin(ox, oy+1); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func cursorUp(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		ox, oy := v.Origin()
+		cx, cy := v.Cursor()
+		if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
+			if err := v.SetOrigin(ox, oy-1); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
