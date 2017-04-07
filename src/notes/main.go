@@ -37,6 +37,10 @@ func main() {
 	// Create our tables if they don't exist
 	CreateTables(db)
 
+	// Retrieve the list of notes
+	rows := GetNoteTitles(db)
+	row := GetNoteBody(db, currNote)
+
 	// Set up the GUI
 	gui, err := gocui.NewGui(gocui.OutputNormal)
 	check(err)
@@ -49,7 +53,10 @@ func main() {
 	gui.Cursor = true
 
 	// List out all of our notes
-	ListNotes(gui, db)
+	DisplayNoteTitles(gui, rows)
+
+	// Display the body of our current note
+	DisplayNoteBody(gui, row)
 
 	// Ctrl-C keybinding
 	if err := keybindings(gui); err != nil {
