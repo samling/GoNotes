@@ -14,7 +14,10 @@ import (
 
 const dbpath = "./database.db"
 
-var db *sql.DB
+var (
+	db       *sql.DB
+	currNote int
+)
 
 func check(e error) {
 	if e != nil {
@@ -23,6 +26,10 @@ func check(e error) {
 }
 
 func main() {
+	// Set the default current note
+	// TODO: Make this save the last open note
+	currNote = 1
+
 	// Open a database connection
 	db = InitDB(dbpath)
 	defer db.Close()
@@ -54,7 +61,7 @@ func main() {
 		log.Panicln(err)
 	}
 
-	//n := &Note{"test title", "test value", "test tag"}
+	//n := &Note{"second title", "second value", "second tag"}
 	//testTag := &Tag{"test name", "test member"}
 	//n.Save(db)
 
