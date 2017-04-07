@@ -17,7 +17,6 @@ type Tag struct {
 }
 
 func GetNoteTitles(db *sql.DB) *sql.Rows {
-
 	rows, err := db.Query("select id, title from Notes")
 	check(err)
 
@@ -25,7 +24,6 @@ func GetNoteTitles(db *sql.DB) *sql.Rows {
 }
 
 func GetNoteBody(db *sql.DB, currNote int) *sql.Row {
-
 	stmt, err := db.Prepare("select body from Notes where id = ?")
 	check(err)
 	defer stmt.Close()

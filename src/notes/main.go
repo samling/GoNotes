@@ -127,10 +127,6 @@ func main() {
 	// Enable the cursor
 	gui.Cursor = true
 
-	// Set the foreground color
-	gui.FgColor = gocui.ColorGreen
-	gui.BgColor = gocui.ColorBlack
-
 	// List out all of our notes
 	DisplayNoteTitles(gui, rows)
 
