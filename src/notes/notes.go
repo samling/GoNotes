@@ -16,41 +16,6 @@ type Tag struct {
 	name, members string
 }
 
-func (n Note) Save(db *sql.DB) bool {
-	tx, err := db.Begin()
-	check(err)
-
-	qry, err := tx.Prepare("insert into Notes(title, body) values (?, ?)")
-	check(err)
-
-	defer qry.Close()
-
-	_, err = qry.Exec(n.title, n.body)
-	check(err)
-
-	tx.Commit()
-
-	qry.Close()
-
-	return true
-}
-
-func ListNotesStdOut(db *sql.DB) error {
-	rows, err := db.Query("select id, title, body from Notes")
-	check(err)
-
-	for rows.Next() {
-		var id int
-		var title string
-		var body string
-		err = rows.Scan(&id, &title, &body)
-		check(err)
-		fmt.Println(id, title, body)
-	}
-
-	return nil
-}
-
 func GetNoteTitles(db *sql.DB) *sql.Rows {
 
 	rows, err := db.Query("select id, title from Notes")
@@ -68,11 +33,34 @@ func GetNoteBody(db *sql.DB, currNote int) *sql.Row {
 	row := stmt.QueryRow(currNote)
 	check(err)
 
+	stmt.Close()
+
 	return row
 }
 
+//func SetNoteTitle(row *sql.Row, db *sql.DB) error {
+//	return nil
+//}
+//
+//func SetNoteBody(row *sql.Row, db *sql.DB) error {
+//	stmt, err := db.Prepare("insert into body values ? where id = ?")
+//	check(err)
+//	defer stmt.Close()
+//
+//	_, err = stmt.Exec(row.body, row.id)
+//	check(err)
+//
+//	db.Commit()
+//
+//	stmt.Close()
+//
+//	return nil
+//}
+
 func DisplayNoteTitles(gui *gocui.Gui, rows *sql.Rows) {
 	gui.Execute(func(gui *gocui.Gui) error {
+		defer rows.Close()
+
 		s, err := gui.View("sidebar")
 		check(err)
 		s.Clear()
