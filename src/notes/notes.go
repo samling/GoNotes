@@ -8,6 +8,12 @@ import (
 	_ "os"
 )
 
+type Notebook struct {
+	name string
+	desc string
+	note []Note
+}
+
 type Note struct {
 	title, body, tags string
 }
@@ -16,36 +22,16 @@ type Tag struct {
 	name, members string
 }
 
-func GetNoteTitles(db *sql.DB) *sql.Rows {
-	rows, err := db.Query("select id, title from Notes")
-	check(err)
-
-	return rows
-}
-
-func GetNoteBody(db *sql.DB, currNote int) *sql.Row {
-	stmt, err := db.Prepare("select body from Notes where id = ?")
-	check(err)
-	defer stmt.Close()
-
-	row := stmt.QueryRow(currNote)
-	check(err)
-
-	stmt.Close()
-
-	return row
-}
-
-//func SetNoteTitle(row *sql.Row, db *sql.DB) error {
+//func SetNoteTitle(note Note, db *sqlx.DB) error {
 //	return nil
 //}
 //
-//func SetNoteBody(row *sql.Row, db *sql.DB) error {
+//func SetNoteBody(note Note, db *sqlx.DB) error {
 //	stmt, err := db.Prepare("insert into body values ? where id = ?")
 //	check(err)
 //	defer stmt.Close()
 //
-//	_, err = stmt.Exec(row.body, row.id)
+//	_, err = stmt.Exec(note.body, currNote)
 //	check(err)
 //
 //	db.Commit()
@@ -64,13 +50,12 @@ func DisplayNoteTitles(gui *gocui.Gui, rows *sql.Rows) {
 		s.Clear()
 
 		for rows.Next() {
-			var id int
 			var title string
 
-			err = rows.Scan(&id, &title)
+			err = rows.Scan(&title)
 			check(err)
 
-			fmt.Fprintln(s, id, title)
+			fmt.Fprintln(s, title)
 		}
 
 		err = rows.Err()

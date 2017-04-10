@@ -2,8 +2,9 @@ package main
 
 import (
 	_ "bufio"
-	"database/sql"
-	_ "fmt"
+	_ "database/sql"
+	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/jroimartin/gocui"
 	_ "github.com/mattn/go-sqlite3"
 	_ "io"
@@ -15,7 +16,7 @@ import (
 const dbpath = "./database.db"
 
 var (
-	db       *sql.DB
+	db       *sqlx.DB
 	currNote int
 )
 
@@ -34,7 +35,7 @@ func layout(g *gocui.Gui) error {
 		}
 		s.Title = "Notes"
 		s.Editable = false
-		s.Wrap = true
+		s.Wrap = false
 	}
 
 	if m, err := g.SetView("main", 30, -1, maxX, maxY); err != nil {
@@ -60,6 +61,12 @@ func keybindings(gui *gocui.Gui) error {
 		return err
 	}
 	if err := gui.SetKeybinding("sidebar", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
+		return err
+	}
+	if err := gui.SetKeybinding("sidebar", gocui.KeyEnter, gocui.ModNone, getLine); err != nil {
+		return err
+	}
+	if err := gui.SetKeybinding("msg", gocui.KeySpace, gocui.ModNone, delMsg); err != nil {
 		return err
 	}
 	if err := gui.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
@@ -99,6 +106,38 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+func getLine(g *gocui.Gui, v *gocui.View) error {
+	var l string
+	var err error
+
+	_, cy := v.Cursor()
+	if l, err = v.Line(cy); err != nil {
+		l = ""
+	}
+
+	maxX, maxY := g.Size()
+	if v, err := g.SetView("msg", maxX/2-30, maxY/2, maxX/2+30, maxY/2+2); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		fmt.Fprintln(v, l)
+		if _, err := g.SetCurrentView("msg"); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func delMsg(g *gocui.Gui, v *gocui.View) error {
+	if err := g.DeleteView("msg"); err != nil {
+		return err
+	}
+	if _, err := g.SetCurrentView("sidebar"); err != nil {
+		return err
+	}
+	return nil
+}
+
 func main() {
 	// Set the default current note
 	// TODO: Make this save the last open note
@@ -112,8 +151,8 @@ func main() {
 	CreateTables(db)
 
 	// Retrieve the list of notes
-	rows := GetNoteTitles(db)
-	row := GetNoteBody(db, currNote)
+	titles := GetNoteTitles(db)
+	body := GetNoteBody(db, currNote)
 
 	// Set up the GUI
 	gui, err := gocui.NewGui(gocui.OutputNormal)
@@ -128,10 +167,10 @@ func main() {
 	gui.Cursor = true
 
 	// List out all of our notes
-	DisplayNoteTitles(gui, rows)
+	DisplayNoteTitles(gui, titles)
 
 	// Display the body of our current note
-	DisplayNoteBody(gui, row)
+	DisplayNoteBody(gui, body)
 
 	// Ctrl-C keybinding
 	if err := keybindings(gui); err != nil {
