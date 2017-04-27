@@ -151,7 +151,8 @@ func main() {
 	CreateTables(db)
 
 	// Retrieve the list of notes
-	titles := GetNoteTitles(db)
+	//titles := GetNoteTitles(db)
+	GetNoteTitles(db)
 	body := GetNoteBody(db, currNote)
 
 	// Set up the GUI
@@ -167,7 +168,7 @@ func main() {
 	gui.Cursor = true
 
 	// List out all of our notes
-	DisplayNoteTitles(gui, titles)
+	//DisplayNoteTitles(gui, titles)
 
 	// Display the body of our current note
 	DisplayNoteBody(gui, body)

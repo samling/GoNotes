@@ -30,11 +30,18 @@ func CreateTables(db *sqlx.DB) {
 	check(err)
 }
 
-func GetNoteTitles(db *sqlx.DB) *sql.Rows {
-	rows, err := db.Query("select title from Notes")
+func GetNoteTitles(db *sqlx.DB) []interface{} {
+	rows, err := db.Queryx("select Id, Title from Notes")
 	check(err)
 
-	return rows
+	titles := []Note{}
+
+	for rows.Next() {
+		scan, err := rows.SliceScan()
+		check(err)
+	}
+
+	return nil
 }
 
 func GetNoteBody(db *sqlx.DB, currNote int) *sql.Row {
